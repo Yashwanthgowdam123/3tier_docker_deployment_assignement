@@ -51,12 +51,18 @@ class AssignmentService:
 
         # Find or create open group for this assignment
         # For single cohort / target group size:
+        if assignment.assignment_type == Assignment.TYPE_INDIVIDUAL:
+            raise AssignmentBusinessError(
+                "Individual assignments are automatically assigned to all students."
+            )
+
+        # Find or create an open group for group assignments
         open_group = (
             assignment.groups.filter(Group.is_full == False)
             .order_by(Group.group_number.asc())
             .first()
         )
-
+        
         if not open_group:
             # Check if assignment reached max groups allowed
             current_groups_count = assignment.groups.count()

@@ -215,16 +215,24 @@ def submit_assignment(assignment_id):
 @login_required
 @student_required
 def submissions():
-    # Groups the current student belongs to
     my_group_ids = [
         m.group_id
         for m in GroupMember.query.filter_by(user_id=current_user.id).all()
     ]
 
-    query = Submission.query.filter(
-        (Submission.submitted_by_id == current_user.id)
-        | (Submission.group_id.in_(my_group_ids))
-    ).order_by(desc(Submission.submitted_at))
+    query = Submission.query
+
+    if my_group_ids:
+        query = query.filter(
+            (Submission.submitted_by_id == current_user.id)
+            | (Submission.group_id.in_(my_group_ids))
+        )
+    else:
+        query = query.filter(
+            Submission.submitted_by_id == current_user.id
+        )
+
+    query = query.order_by(desc(Submission.submitted_at))
 
     page = request.args.get("page", 1, type=int)
     per_page = current_app.config.get("ITEMS_PER_PAGE", 10)
@@ -239,4 +247,4 @@ def submissions():
         "student/submissions/list.html",
         submissions=pagination.items,
         pagination=pagination,
-    )
+    ))
