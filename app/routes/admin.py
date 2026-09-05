@@ -112,6 +112,30 @@ def create_assignment():
             created_by_id=current_user.id,
         )
         db.session.add(assignment)
+        db.session.flush()
+
+        # Automatically assign all students for Individual assignments
+        if assignment.assignment_type == Assignment.TYPE_INDIVIDUAL:
+            students = User.query.filter_by(role=User.ROLE_STUDENT).all()
+
+            for index, student in enumerate(students, start=1):
+                group = Group(
+                    assignment_id=assignment.id,
+                    group_number=index,
+                    name=f"{student.full_name}",
+                    is_full=True,
+                    status=Group.STATUS_FULL,
+                )
+                db.session.add(group)
+                db.session.flush()
+
+                member = GroupMember(
+                    assignment_id=assignment.id,
+                    group_id=group.id,
+                    user_id=student.id,
+                )
+                db.session.add(member)
+
         db.session.commit()
 
         AuditLog.log(
