@@ -79,7 +79,7 @@ jobs:
             export DOCKER_USER_NAME="${{ secrets.DOCKER_USER_NAME }}"
             export IMAGE_NAME="${{ secrets.IMAGE_NAME }}"
             export IMAGE_TAG="${{ secrets.IMAGE_TAG }}"
-
+            sudo su 
             docker login -u "${{ secrets.DOCKER_USER_NAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
 
             docker compose pull
