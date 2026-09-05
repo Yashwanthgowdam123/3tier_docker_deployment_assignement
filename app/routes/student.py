@@ -247,4 +247,4 @@ def submissions():
         "student/submissions/list.html",
         submissions=pagination.items,
         pagination=pagination,
-    ))
+    )
