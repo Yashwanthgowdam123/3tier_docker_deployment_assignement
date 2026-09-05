@@ -215,15 +215,28 @@ def submit_assignment(assignment_id):
 @login_required
 @student_required
 def submissions():
-    # Submissions where current student is either submitter or part of the enrolled group
+    # Groups the current student belongs to
     my_group_ids = [
-        m.group_id for m in GroupMember.query.filter_by(user_id=current_user.id).all()
+        m.group_id
+        for m in GroupMember.query.filter_by(user_id=current_user.id).all()
     ]
-    submissions_list = (
-        Submission.query.filter(
-            (Submission.submitted_by_id == current_user.id) | (Submission.group_id.in_(my_group_ids))
-        )
-        .order_by(desc(Submission.submitted_at))
-        .all()
+
+    query = Submission.query.filter(
+        (Submission.submitted_by_id == current_user.id)
+        | (Submission.group_id.in_(my_group_ids))
+    ).order_by(desc(Submission.submitted_at))
+
+    page = request.args.get("page", 1, type=int)
+    per_page = current_app.config.get("ITEMS_PER_PAGE", 10)
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
     )
-    return render_template("student/submissions/list.html", submissions=submissions_list)
+
+    return render_template(
+        "student/submissions/list.html",
+        submissions=pagination.items,
+        pagination=pagination,
+    )
