@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  app:
+    image: <YOUR_REGISTRY>/assignment-group-portal:v1
+    container_name: assignment-group-portal
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
+    networks:
+      - assignment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/auth/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - assignment-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+    volumes:
+      - redis-data:/data
+    networks:
+      - assignment-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+networks:
+  assignment-network:
+    driver: bridge
+
+volumes:
+  redis-data:
