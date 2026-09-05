@@ -67,7 +67,7 @@ jobs:
               cd "$PROJECT_DIR"
               git pull origin main
             fi
-
+            sudo su
             cd "$PROJECT_DIR"
 
             # Create .env
