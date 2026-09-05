@@ -177,15 +177,45 @@ def submit_assignment(assignment_id):
         flash("Assignment not found.", "danger")
         return redirect(url_for("student.assignments"))
 
-    my_membership = (
-        GroupMember.query.filter_by(assignment_id=assignment.id, user_id=current_user.id).first()
-    )
-    if not my_membership:
-        flash("You must be an enrolled team member of this assignment to submit deliverables.", "danger")
-        return redirect(url_for("student.assignment_detail", assignment_id=assignment.id))
+    if assignment.assignment_type == Assignment.TYPE_INDIVIDUAL:
+        my_membership = (
+            GroupMember.query.filter_by(
+                assignment_id=assignment.id,
+                user_id=current_user.id,
+            ).first()
+        )
 
-    group = my_membership.group
-    existing_sub = group.latest_submission
+        if not my_membership:
+            flash(
+                "Your individual assignment has not been assigned yet.",
+                "danger",
+            )
+            return redirect(
+                url_for("student.assignment_detail", assignment_id=assignment.id)
+            )
+
+        group = my_membership.group
+        existing_sub = group.latest_submission
+
+    else:
+        my_membership = (
+            GroupMember.query.filter_by(
+                assignment_id=assignment.id,
+                user_id=current_user.id,
+            ).first()
+        )
+
+        if not my_membership:
+            flash(
+                "You must be an enrolled team member of this assignment to submit deliverables.",
+                "danger",
+            )
+            return redirect(
+                url_for("student.assignment_detail", assignment_id=assignment.id)
+            )
+
+        group = my_membership.group
+        existing_sub = group.latest_submission
 
     form = SubmissionForm(obj=existing_sub)
     if form.validate_on_submit():
