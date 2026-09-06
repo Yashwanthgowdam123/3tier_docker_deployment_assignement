@@ -67,7 +67,7 @@ jobs:
               cd "$PROJECT_DIR"
               git pull origin main
             fi
-            sudo su
+            
             cd "$PROJECT_DIR"
 
             # Create .env
@@ -79,13 +79,13 @@ jobs:
             export DOCKER_USER_NAME="${{ secrets.DOCKER_USER_NAME }}"
             export IMAGE_NAME="${{ secrets.IMAGE_NAME }}"
             export IMAGE_TAG="${{ secrets.IMAGE_TAG }}"
-            sudo su 
-            docker login -u "${{ secrets.DOCKER_USER_NAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            
+            sudo docker login -u "${{ secrets.DOCKER_USER_NAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
 
-            docker compose pull
+            sudo docker compose pull
 
-            docker compose down || true
+            sudo docker compose down || true
 
-            docker compose up -d --force-recreate
+            sudo docker compose up -d --force-recreate
 
-            docker image prune -f
+            sudo docker image prune -f
